@@ -25,6 +25,7 @@
 #include <QFile>
 #include <QDir>
 #include <QCryptographicHash>
+#include <unistd.h>
 
 #if defined(__MINGW32__)
 #include <io.h>
