@@ -125,8 +125,8 @@ DO_SET_X=0
 # Use ccache ?
 which ccache &>/dev/null
 if [ $? -eq 0 ]; then
-	export CC="ccache gcc"
-	export CXX="ccache g++"
+	export CC="ccache $CC"
+	export CXX="ccache $CXX"
 	export NDK_CCACHE="ccache"
 fi
 
@@ -181,9 +181,9 @@ function push_arm() {
 	#export OFLAG="-Os"
 	#export OFLAG="-O2"
 
-	export CFLAGS="-DANDROID -mandroid $OFLAG -fomit-frame-pointer --sysroot $NDKPLATFORM -I$STAGE_PATH/include"
+	export CFLAGS="-DANDROID $OFLAG -fomit-frame-pointer --sysroot $NDKPLATFORM -I$STAGE_PATH/include"
 	if [ "X$ARCH" == "Xarmeabi-v7a" ]; then
-		CFLAGS+=" -march=armv7-a -mfloat-abi=softfp -mfpu=vfp -mthumb"
+		CFLAGS+=" -arch=arm -mfloat-abi=softfp -mfpu=vfp -mthumb"
 	fi
 
 
@@ -205,8 +205,8 @@ function push_arm() {
       export TOOLCHAIN_PREFIX=arm-linux-androideabi
       export TOOLCHAIN_VERSION=4.8
   elif [ "X${ANDROIDNDKVER:0:3}" == "Xr10" ]; then
-      export TOOLCHAIN_PREFIX=arm-linux-androideabi
-      export TOOLCHAIN_VERSION=4.9
+      export TOOLCHAIN_PREFIX=llvm
+      export TOOLCHAIN_VERSION=3.5
   else
       echo "Error: Please report issue to enable support for newer ndk."
       exit 1
@@ -219,9 +219,15 @@ function push_arm() {
 	export PATH="$STAGE_PATH/bin:$ANDROIDNDK/toolchains/$TOOLCHAIN_PREFIX-$TOOLCHAIN_VERSION/prebuilt/$PYPLATFORM-x86/bin/:$ANDROIDNDK/toolchains/$TOOLCHAIN_PREFIX-$TOOLCHAIN_VERSION/prebuilt/$PYPLATFORM-x86_64/bin/:$ANDROIDNDK:$ANDROIDSDK/tools:$QTSDK/android_armv7/bin:$PATH"
 
 	# search compiler in the path, to fail now instead of later.
-	CC=$(which $TOOLCHAIN_PREFIX-gcc)
+  if [ "X$TOOLCHAIN_PREFIX" == "Xllvm" ]; then
+    CC=$(which clang)
+    CXX=$(which clang++)
+  else
+    CC=$(which $TOOLCHAIN_PREFIX-gcc)
+    CC=$(which $TOOLCHAIN_PREFIX-g++)
+  fi
 	if [ "X$CC" == "X" ]; then
-		error "Unable to find compiler ($TOOLCHAIN_PREFIX-gcc) !!"
+		error "Unable to find compiler ($TOOLCHAIN_PREFIX-gcc or clang) !!"
 		error "1. Ensure that SDK/NDK paths are correct"
 		error "2. Ensure that you've the Android API $ANDROIDAPI SDK Platform (via android tool)"
 		exit 1
@@ -229,11 +235,11 @@ function push_arm() {
 		debug "Compiler found at $CC"
 	fi
 
-	export CC="$TOOLCHAIN_PREFIX-gcc $CFLAGS"
-	export CXX="$TOOLCHAIN_PREFIX-g++ $CXXFLAGS"
+	export CC="$CC $CFLAGS"
+	export CXX="$CXX $CXXFLAGS"
 	export AR="$TOOLCHAIN_PREFIX-ar" 
 	export RANLIB="$TOOLCHAIN_PREFIX-ranlib"
-	export LD="$TOOLCHAIN_PREFIX-ld"
+	export LD="$TOOLCHAIN_PREFIX-link"
 	export STRIP="$TOOLCHAIN_PREFIX-strip --strip-unneeded"
 	export MAKE="make -j$CORES"
 	export READELF="$TOOLCHAIN_PREFIX-readelf"
