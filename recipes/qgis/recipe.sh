@@ -11,7 +11,7 @@ DEPS_qgis=(gdal qwt qwtpolar qscintilla libspatialite spatialindex expat gsl pos
 URL_qgis=https://github.com/m-kuhn/QGIS/archive/android-2_6.tar.gz
 
 # md5 of the package
-MD5_qgis=c232f3f8af17d0aed663d26432192b31
+MD5_qgis=b4fa619636a0ebb3584ed6e75919120d
 
 # default build path
 BUILD_qgis=$BUILD_PATH/qgis/$(get_directory $URL_qgis)
