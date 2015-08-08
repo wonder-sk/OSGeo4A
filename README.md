@@ -29,7 +29,13 @@ export QTSDK="/path/to/qt/sdk/Qt5.4.0/5.4"
 
 Call
 ```sh
-./distribute.sh -dqgis -mqgis
+./distribute.sh -m qgis_core
+```
+
+It is possible to provide a local source directory instead of a remote one:
+
+```sh
+O4A_qgis_core_DIR=~/qgis/git-master ./distribute.sh -m qgis_core
 ```
 
 Options
